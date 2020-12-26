@@ -54,7 +54,7 @@
             display: inline;
         }
 
-        .order {
+        .order_button {
             text-align: center;
         }
 
@@ -68,26 +68,31 @@
             // 여기에 코드를 작성하세요.
             // 1-1. 이름(order-name) 부분의 값을 가져오고
             let name = $('#order-name').val();
+            let count = $('#order-count').val();
+            let address = $('#order-address').val();
+            let number = $('#order-phone').val();
             // 1-2. 만약에 빈 칸이면 alert을 띄워주세요.
             if (name == "") {
                 alert("이름 써!")
-            } else {
-                let count = $('#order-count').val();
-                if (count == "") {
-                    alert("수량 써!")
-                } else {
-                    let address = $('#order-address').val();
-                    if (address == "") {
-                        alert("주소 써!")
-                    } else {
-                        let number = $('#order-phone').val();
-                        if (number == "") {
-                            alert("번호 써!")
+            } else if (count == "") {
+                alert("수량 써!")
+            } else if (address == "") {
+                alert("주소 써!")
+            } else if (number == "") {
+                alert("번호 써!")
 
-                        }
+            }
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {'name_give': name, 'count_give': count, 'number_give': number, 'address_give': address},
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        console.log(response);
+                        window.location.reload();
                     }
                 }
-            }
+            })
         }
 
         $(document).ready(function () {
@@ -101,10 +106,41 @@
                     // 서버에서 준 결과를 이용해서 나머지 코드를 작성
                 }
             })
-
-
-            // 여기에 환율 API Ajax 요청을 하면 되겠죠?
         });
+
+        $(document).ready(function () {
+            $("#orders-box").html("");
+            showOrders();
+        });
+
+        function showOrders() {
+            // 주문 목록보기 API 를 사용해 여기를 채워주세요
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        let final_order = response['orders']
+                        for(let i=0; i<final_order.length; i++){
+                           makeOrderRow(final_order[i]["name"], final_order[i]["count"], final_order[i]["address"], final_order[i]["phone"],)
+                        }
+
+                    }
+                }
+            })
+        }
+
+        function makeOrderRow(name, count, address, phone) {
+            let tempHtml = `<tr>\
+                                <td>${name}</td>
+                                <td>${count}</td>
+                                <td>${address}</td>
+                                <td>${phone}</td>
+                              </tr>`;
+
+            $("#orders-box").append(tempHtml);
+        }
     </script>
 </head>
 
@@ -148,7 +184,7 @@
             </div>
             <input type="text" class="form-control" id="order-phone">
         </div>
-        <div class="order">
+        <div class="order_button">
             <button onclick="order()" type="button" class="btn btn-primary">주문하기</button>
         </div>
     </div>
